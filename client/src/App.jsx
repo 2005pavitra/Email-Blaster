@@ -62,7 +62,6 @@ function App(){
         />
       </div>
 
-      {/* This button triggers the Google Popup -> Then triggers blastEmail */}
       <button 
         onClick={() => login()} 
         style={{ padding: '15px 30px', fontSize: '16px', cursor: 'pointer', backgroundColor: '#4285F4', color: 'white', border: 'none', borderRadius: '5px' }}>
