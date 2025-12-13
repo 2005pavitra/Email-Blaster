@@ -6,9 +6,30 @@ const { google } = require('googleapis');
 
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
-app.use(cors());
+app.use(cors({
+    origin: '*', // Allow all origins for simplicity in this demo
+    methods: ['GET', 'POST'],
+    credentials: true
+}));
 app.use(bodyParser.json());
+
+//db
+const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/email-blaster';
+mongoose.connect(mongoUri)
+    .then(() => console.log(' Connected to MongoDB'))
+    .catch(err => console.error(' MongoDB Connection Error:', err));
+
+//schema
+const EmailLogSchema = new mongoose.Schema({
+    senderEmail: String,
+    targetEmail: String,
+    subject: String,
+    timestamp: { type: Date, default: Date.now }
+});
+
+const EmailLog = mongoose.model('EmailLog', EmailLogSchema);
 
 //0auth2 client
 const OAuth2Client = new google.auth.OAuth2(
@@ -17,6 +38,7 @@ const OAuth2Client = new google.auth.OAuth2(
     'postmessage'
 );
 
+//--routes-------------
 app.post('/api/send-email', async (req, res) => {
     const { code, targetEmail, subject, message } = req.body;
 
@@ -48,13 +70,34 @@ app.post('/api/send-email', async (req, res) => {
             }
         });
 
-        console.log('Email sent successfully:', response.data);
-        res.status(200).json({ success: true, message: 'Email sent successfully' });
+        // Fetch sender email for logging
+        const oauth2 = google.oauth2({ version: 'v2', auth: OAuth2Client });
+        const userInfo = await oauth2.userinfo.get();
+        const senderEmail = userInfo.data.email;
+
+        await EmailLog.create({
+            senderEmail: senderEmail,
+            targetEmail: targetEmail,
+            subject: finalSubject
+        });
+
+        res.status(200).json({ success: true, message: 'Email sent and logged successfully' });
     } catch (error) {
         console.error('Error sending email:', error);
         res.status(500).json({ error: 'Failed to send email' });
     }
-})
+});
+
+app.get('/api/admin/stats', async (req, res) => {
+    try {
+        const totalSent = await EmailLog.countDocuments();
+        const recentLogs = await EmailLog.find().sort({ timestamp: -1 }).limit(10);
+        res.json({ totalSent, recentLogs })
+    } catch (error) {
+        console.error('Error fetching stats:', error);
+        res.status(500).json({ error: 'Failed to fetch stats' })
+    }
+});
 
 app.listen(process.env.PORT || 5000, () => {
     console.log(`Server is running on port ${process.env.PORT || 5000}`);
