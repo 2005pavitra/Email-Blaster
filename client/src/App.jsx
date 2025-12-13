@@ -39,7 +39,7 @@ function App(){
 
   return (
     <div style={{ padding: '50px', fontFamily: 'Arial' }}>
-      <h1>📢 Student Email Blaster</h1>
+      <h1>Student Email Blaster</h1>
       
       <div style={{ marginBottom: '20px' }}>
         <label>Target HOD Email: </label>
@@ -66,7 +66,7 @@ function App(){
       <button 
         onClick={() => login()} 
         style={{ padding: '15px 30px', fontSize: '16px', cursor: 'pointer', backgroundColor: '#4285F4', color: 'white', border: 'none', borderRadius: '5px' }}>
-        🚀 Sign in & Blast Email
+        Sign in & Blast Email
       </button>
 
       <p style={{ marginTop: '20px', fontWeight: 'bold' }}>{status}</p>
