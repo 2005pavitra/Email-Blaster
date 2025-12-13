@@ -8,7 +8,11 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
-app.use(cors());
+app.use(cors({
+    origin: '*', // Allow all origins for simplicity in this demo
+    methods: ['GET', 'POST'],
+    credentials: true
+}));
 app.use(bodyParser.json());
 
 //db

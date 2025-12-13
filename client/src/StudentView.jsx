@@ -11,7 +11,7 @@ function StudentView() {
   const blastEmail = async (authCode) => {
     setStatus('Sending...');
     try {
-      const response = await axios.post('http://localhost:5000/api/send-email', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/send-email`, {
         code: authCode,
         targetEmail: targetEmail,
         subject: subject,
