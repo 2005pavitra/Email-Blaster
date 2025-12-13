@@ -5,7 +5,7 @@ import './App.css';
 
 function App(){
   const [targetEmail, setTargetEmail] = useState('');
-  const[subjext, setSubject] = useState('Important Complaint');
+  const[subject, setSubject] = useState('Important Complaint');
   const [status, setStatus] = useState('');
 
   const blastEmail = async(authCode) =>{
