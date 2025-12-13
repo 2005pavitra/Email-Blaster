@@ -1,76 +1,63 @@
-import { useState } from "react";
-import {useGoogleLogin} from '@react-oauth/google';
-import axios from 'axios'
-import './App.css';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import StudentView from './StudentView';
+import Admin from './Admin.jsx';
 
-function App(){
-  const [targetEmail, setTargetEmail] = useState('');
-  const[subject, setSubject] = useState('Important Complaint');
-  const [status, setStatus] = useState('');
+// Basic password protection component
+const ProtectedAdmin = ({ children }) => {
+    const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+    const [password, setPassword] = React.useState('');
 
-  const blastEmail = async(authCode) =>{
-    setStatus('Sending...');
-    try{
-      const response = await axios.post('http://localhost:5000/api/send-email', {
-        code:authCode,
-        targetEmail: targetEmail,
-        subject: subject,
-        message: `<h3>Hello Sir/Ma'am,</h3><p>This is a formal complaint regarding the issue...</p><p>Sent via Student Voice App.</p>`      });
-        if(response.data.success){
-          setStatus('Email sent successfully');
+    const handleLogin = () => {
+        if (password === 'admin123') {
+            setIsAuthenticated(true);
+        } else {
+            alert('Incorrect Password');
         }
+    };
+
+    if (!isAuthenticated) {
+        return (
+            <div style={{ padding: '40px', maxWidth: '300px', margin: 'auto', textAlign: 'center' }}>
+                <h2>Admin Access</h2>
+                <input
+                    type="password"
+                    placeholder="Enter Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    style={{ padding: '10px', width: '100%', marginBottom: '10px' }}
+                />
+                <button
+                    onClick={handleLogin}
+                    style={{ padding: '10px 20px', backgroundColor: '#333', color: 'white', border: 'none', cursor: 'pointer' }}
+                >
+                    Unlock
+                </button>
+            </div>
+        );
     }
-    catch(error){
-      console.error('Error sending email:', error);
-      setStatus('Failed to send email');
-    }
-  };
 
-  //google handler
-  const login = useGoogleLogin({
-    onSuccess:(codeResponse) => blastEmail(codeResponse.code),
-    onError: (error) => console.error('Login failed:', error),
-    flow:'auth-code', 
-    scope: 
-      'https://www.googleapis.com/auth/gmail.send',
-    
+    return children;
+};
 
-  })
+function App() {
+    return (
+        <BrowserRouter>
+            <nav style={{ padding: '10px', background: '#eee', marginBottom: '20px', display: 'flex', gap: '20px' }}>
+                <Link to="/" style={{ textDecoration: 'none', fontWeight: 'bold' }}>🏠 Student View</Link>
+                <Link to="/admin" style={{ textDecoration: 'none', fontWeight: 'bold' }}>🔑 Admin Panel</Link>
+            </nav>
 
-  return (
-    <div style={{ padding: '50px', fontFamily: 'Arial' }}>
-      <h1>Student Email Blaster</h1>
-      
-      <div style={{ marginBottom: '20px' }}>
-        <label>Target HOD Email: </label>
-        <input 
-          type="email" 
-          value={targetEmail} 
-          onChange={(e) => setTargetEmail(e.target.value)} 
-          placeholder="hod@college.edu"
-          style={{ padding: '8px', width: '300px' }}
-        />
-      </div>
-
-      <div style={{ marginBottom: '20px' }}>
-        <label>Subject Line: </label>
-        <input 
-          type="text" 
-          value={subject} 
-          onChange={(e) => setSubject(e.target.value)}
-          style={{ padding: '8px', width: '300px' }} 
-        />
-      </div>
-
-      <button 
-        onClick={() => login()} 
-        style={{ padding: '15px 30px', fontSize: '16px', cursor: 'pointer', backgroundColor: '#4285F4', color: 'white', border: 'none', borderRadius: '5px' }}>
-        Sign in & Blast Email
-      </button>
-
-      <p style={{ marginTop: '20px', fontWeight: 'bold' }}>{status}</p>
-    </div>
-  );
+            <Routes>
+                <Route path="/" element={<StudentView />} />
+                <Route path="/admin" element={
+                    <ProtectedAdmin>
+                        <Admin />
+                    </ProtectedAdmin>
+                } />
+            </Routes>
+        </BrowserRouter>
+    );
 }
 
 export default App;
