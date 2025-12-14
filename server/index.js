@@ -9,8 +9,13 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 app.use(cors({
-    origin: '*', // Allow all origins for simplicity in this demo
-    methods: ['GET', 'POST'],
+    origin: [
+        'https://email-blaster-xi.vercel.app',
+        'https://email-blaster-bjll.vercel.app', // Adding the other one just in case
+        'http://localhost:5173',
+        'http://localhost:3000'
+    ],
+    methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true
 }));
 app.use(bodyParser.json());
